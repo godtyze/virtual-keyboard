@@ -1,0 +1,105 @@
+@font-face {
+  font-family: "Lato", sans-serif;
+  src: url("../assets/fonts/Lato-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: normal;
+}
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: "Lato", sans-serif;
+  font-size: 20px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  row-gap: 10px;
+  min-height: 100vh;
+}
+
+.textarea {
+  display: block;
+  width: 1000px;
+  height: 300px;
+  padding: 10px;
+  font-family: "Lato", sans-serif;
+  font-size: 23px;
+}
+
+.keyboard-wrapper {
+  max-width: 1008px;
+  width: 100%;
+  background-color: #e7e7e7;
+}
+
+.row {
+  display: flex;
+}
+
+.key {
+  width: 60px;
+  height: 60px;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 4px;
+  transition: 0.2s;
+  cursor: pointer;
+  user-select: none;
+}
+.key:hover {
+  background-color: #333;
+  color: #fff;
+}
+.key.active {
+  background-color: #333;
+  color: #fff;
+  border-radius: 50px;
+}
+
+.Backspace {
+  width: 120px;
+}
+
+.Tab {
+  width: 90px;
+}
+
+.CapsLock {
+  width: 128px;
+}
+
+.Enter {
+  width: 128px;
+}
+
+.ShiftRight,
+.ShiftLeft {
+  width: 128px;
+}
+
+.Space {
+  max-width: 465px;
+  width: 100%;
+}
+
+.caseDown,
+.caseUp,
+.caps,
+.shiftCaps {
+  min-height: 60px;
+}
+
+.hidden {
+  display: none;
+}
+
+/*# sourceMappingURL=style.css.map */
