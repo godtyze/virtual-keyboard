@@ -391,7 +391,7 @@ const keys = {
       shiftCas: '|'
     }
   },
-  Del: {
+  Delete: {
     en: {
       caseDown: 'Del',
       caseUp: 'Del',
