@@ -382,13 +382,13 @@ const keys = {
       caseDown: '\\',
       caseUp: '|',
       caps: '\\',
-      shiftCas: '|'
+      shiftCaps: '|'
     },
     ru: {
       caseDown: '\\',
       caseUp: '|',
       caps: '\\',
-      shiftCas: '|'
+      shiftCaps: '|'
     }
   },
   Delete: {
