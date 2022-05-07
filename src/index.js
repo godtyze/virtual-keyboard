@@ -1,24 +1,23 @@
 import './styles/style.scss';
 import createKeys from './utils/createKeys.js';
 
-let lang = localStorage.getItem('lang') || 'en';
-const keysArr = createKeys(lang);
+let keyboardLanguage = localStorage.getItem('keyboardLanguage') || 'en';
+const keysArr = createKeys(keyboardLanguage);
 let capsState = false;
 let shiftState = false;
-
-// localStorage.clear()
 
 const pressHandler = (event) => {
   event.preventDefault();
   const textArea = document.getElementById('textarea');
+  let pos = textArea.selectionStart;
   if (event.code === 'CapsLock' && event.type === 'keydown') capsState = !capsState;
   if ((event.code === 'ShiftLeft' || event.code === 'ShiftRight') && event.type === 'keydown') shiftState = true;
   if ((event.code === 'ShiftLeft' || event.code === 'ShiftRight') && event.type === 'keyup') shiftState = false;
   if (event.ctrlKey && event.altKey && event.type === 'keydown') {
-    if (lang === 'en') {
-      lang = 'ru';
+    if (keyboardLanguage === 'en') {
+      keyboardLanguage = 'ru';
     } else {
-      lang = 'en';
+      keyboardLanguage = 'en';
     }
   }
   keysArr.forEach(el => {
@@ -72,20 +71,21 @@ const pressHandler = (event) => {
       Array.from(filteredArr).filter(elem => elem.classList.contains('shiftCaps'))[0].classList.add('hidden');
     }
     if (!el.classList.contains('Tab')
-        && !el.classList.contains('CapsLock')
-        && !el.classList.contains('ShiftLeft')
-        && !el.classList.contains('ControlLeft')
-        && !el.classList.contains('MetaLeft')
-        && !el.classList.contains('AltLeft')
-        && !el.classList.contains('AltRight')
-        && !el.classList.contains('ControlRight')
-        && !el.classList.contains('Backspace')
-        && !el.classList.contains('Enter')
-        && !el.classList.contains('ShiftRight')
-        && el.classList.contains(event.code)
-        && event.type !== 'keyup') {
+      && !el.classList.contains('CapsLock')
+      && !el.classList.contains('ShiftLeft')
+      && !el.classList.contains('ControlLeft')
+      && !el.classList.contains('MetaLeft')
+      && !el.classList.contains('AltLeft')
+      && !el.classList.contains('AltRight')
+      && !el.classList.contains('ControlRight')
+      && !el.classList.contains('Backspace')
+      && !el.classList.contains('Enter')
+      && !el.classList.contains('ShiftRight')
+      && !el.classList.contains('Delete')
+      && el.classList.contains(event.code)
+      && event.type !== 'keyup') {
       const textContent = Array.from(filteredArr).filter(elem => !elem.classList.contains('hidden'))[0].textContent;
-      textArea.value += textContent;
+      textArea.setRangeText(textContent, pos, pos, 'end');
     }
     if (event.ctrlKey && event.altKey && event.type === 'keydown') {
       const activeLang = arr.filter(elem => !elem.classList.contains('hidden'))[0];
@@ -111,12 +111,40 @@ const pressHandler = (event) => {
       });
     }
   });
-  if (event.code === 'Enter' && event.type === 'keydown') textArea.value += '\n';
-  if (event.code === 'Tab' && event.type === 'keydown') textArea.value += '\t';
+  if (event.code === 'Enter' && event.type === 'keydown') textArea.setRangeText('\n', pos, pos, 'end');
+  if (event.code === 'Tab' && event.type === 'keydown') textArea.setRangeText('\t', pos, pos, 'end');
+  if (event.code === 'Delete' && event.type === 'keydown') {
+    if (pos >= 0 && textArea.selectionStart === textArea.selectionEnd) {
+      textArea.value = textArea.value.slice(0, pos)
+        + textArea.value.slice(pos + 1, textArea.value.length);
+    }
+    if (textArea.selectionStart !== textArea.selectionEnd) {
+      textArea.value = textArea.value.slice(0, textArea.selectionStart)
+        + textArea.value.slice(textArea.selectionEnd, textArea.value.length);
+    }
+    textArea.selectionStart = pos;
+    textArea.selectionEnd = pos;
+  }
+  if (event.code === 'Backspace' && event.type === 'keydown') {
+    if (pos > 0 && textArea.selectionStart === textArea.selectionEnd) {
+      textArea.value = textArea.value.slice(0, pos - 1)
+        + textArea.value.slice(pos, textArea.value.length);
+      textArea.selectionStart = pos - 1;
+      textArea.selectionEnd = pos - 1;
+    }
+    if (textArea.selectionStart !== textArea.selectionEnd) {
+      textArea.value = textArea.value.slice(0, textArea.selectionStart)
+        + textArea.value.slice(textArea.selectionEnd, textArea.value.length);
+      textArea.selectionStart = pos;
+      textArea.selectionEnd = pos;
+    }
+  }
 };
 
 const clickHandler = (event) => {
   const textArea = document.getElementById('textarea');
+  let pos = textArea.selectionStart;
+  textArea.focus();
   const arr = Array.from(event.currentTarget.children);
   const filteredArr = arr.filter(elem => !elem.classList.contains('hidden'))[0].children;
   if (event.currentTarget.classList.contains('CapsLock') && event.type !== 'mouseup') capsState = !capsState;
@@ -143,8 +171,23 @@ const clickHandler = (event) => {
     keysArr.forEach(el => {
       const keyArr = Array.from(el.children);
       const filteredKeyArr = keyArr.filter(elem => !elem.classList.contains('hidden'))[0].children;
-      Array.from(filteredKeyArr).filter(elem => elem.classList.contains('caseDown'))[0].classList.toggle('hidden');
-      Array.from(filteredKeyArr).filter(elem => elem.classList.contains('caps'))[0].classList.toggle('hidden');
+      if (capsState && !shiftState) {
+        Array.from(filteredKeyArr).filter(elem => elem.classList.contains('caseDown'))[0].classList.add('hidden');
+        Array.from(filteredKeyArr).filter(elem => elem.classList.contains('caps'))[0].classList.remove('hidden');
+      }
+      if (!capsState && shiftState) {
+        Array.from(filteredKeyArr).filter(elem => elem.classList.contains('caseUp'))[0].classList.remove('hidden');
+        Array.from(filteredKeyArr).filter(elem => elem.classList.contains('shiftCaps'))[0].classList.add('hidden');
+      }
+      if (!capsState && !shiftState) {
+        Array.from(filteredKeyArr).filter(elem => elem.classList.contains('caseDown'))[0].classList.remove('hidden');
+        Array.from(filteredKeyArr).filter(elem => elem.classList.contains('caps'))[0].classList.add('hidden');
+      }
+      if (capsState && shiftState) {
+        Array.from(filteredKeyArr).filter(elem => elem.classList.contains('caseUp'))[0].classList.add('hidden');
+        Array.from(filteredKeyArr).filter(elem => elem.classList.contains('caps'))[0].classList.add('hidden');
+        Array.from(filteredKeyArr).filter(elem => elem.classList.contains('shiftCaps'))[0].classList.remove('hidden');
+      }
     });
   }
   if ((event.currentTarget.classList.contains('ShiftLeft') || event.currentTarget.classList.contains('ShiftRight'))
@@ -194,17 +237,56 @@ const clickHandler = (event) => {
     && !event.currentTarget.classList.contains('Backspace')
     && !event.currentTarget.classList.contains('Enter')
     && !event.currentTarget.classList.contains('ShiftRight')
+    && !event.currentTarget.classList.contains('Delete')
     && event.type === 'mousedown') {
     const textContent = Array.from(filteredArr).filter(elem => !elem.classList.contains('hidden'))[0].textContent;
-    textArea.value += textContent;
+    textArea.setRangeText(textContent, pos, pos, 'end');
   }
   if (event.currentTarget.classList.contains('Enter') && event.type === 'mousedown') textArea.value += '\n';
   if (event.currentTarget.classList.contains('Tab') && event.type === 'mousedown') textArea.value += '\t';
+  if (event.currentTarget.classList.contains('Delete') && event.type === 'mousedown') {
+    if (pos >= 0 && textArea.selectionStart === textArea.selectionEnd) {
+      textArea.value = textArea.value.slice(0, pos)
+        + textArea.value.slice(pos + 1, textArea.value.length);
+    }
+    if (textArea.selectionStart !== textArea.selectionEnd) {
+      textArea.value = textArea.value.slice(0, textArea.selectionStart)
+        + textArea.value.slice(textArea.selectionEnd, textArea.value.length);
+    }
+    textArea.selectionStart = pos;
+    textArea.selectionEnd = pos;
+  }
+  if (event.currentTarget.classList.contains('Backspace') && event.type === 'mousedown') {
+    if (pos > 0 && textArea.selectionStart === textArea.selectionEnd) {
+      textArea.value = textArea.value.slice(0, pos - 1)
+        + textArea.value.slice(pos, textArea.value.length);
+      textArea.selectionStart = pos - 1;
+      textArea.selectionEnd = pos - 1;
+    }
+    if (textArea.selectionStart !== textArea.selectionEnd) {
+      textArea.value = textArea.value.slice(0, textArea.selectionStart)
+        + textArea.value.slice(textArea.selectionEnd, textArea.value.length);
+      textArea.selectionStart = pos;
+      textArea.selectionEnd = pos;
+    }
+  }
 };
 
 const init = () => {
   const contentContainer = document.createElement('div');
   contentContainer.classList.add('container');
+
+  const header = document.createElement('h1');
+  header.textContent = 'RS School Virtual Keyboard';
+  header.classList.add('header');
+
+  const info1 = document.createElement('p');
+  info1.textContent = 'Клавиатура создана в операционной системе Windows';
+  info1.classList.add('info');
+
+  const info2 = document.createElement('p');
+  info2.textContent = 'Для переключения языка комбинация: левыe ctrl + alt';
+  info2.classList.add('info');
 
   const row1 = document.createElement('div');
   const row2 = document.createElement('div');
@@ -234,11 +316,11 @@ const init = () => {
   textArea.classList.add('textarea');
 
   keyboardWrapper.append(...rowArr);
-  contentContainer.append(textArea, keyboardWrapper);
+  contentContainer.append(header, textArea, keyboardWrapper, info1, info2);
   document.body.prepend(contentContainer);
 };
 
-window.addEventListener('beforeunload', () => localStorage.setItem('lang', lang));
+window.addEventListener('beforeunload', () => localStorage.setItem('keyboardLanguage', keyboardLanguage));
 window.addEventListener('DOMContentLoaded', init);
 window.addEventListener('keydown', pressHandler);
 window.addEventListener('keyup', pressHandler);
