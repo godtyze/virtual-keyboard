@@ -242,8 +242,8 @@ const clickHandler = (event) => {
     const textContent = Array.from(filteredArr).filter(elem => !elem.classList.contains('hidden'))[0].textContent;
     textArea.setRangeText(textContent, pos, pos, 'end');
   }
-  if (event.currentTarget.classList.contains('Enter') && event.type === 'mousedown') textArea.value += '\n';
-  if (event.currentTarget.classList.contains('Tab') && event.type === 'mousedown') textArea.value += '\t';
+  if (event.currentTarget.classList.contains('Enter') && event.type === 'mousedown') textArea.setRangeText('\n', pos, pos, 'end');
+  if (event.currentTarget.classList.contains('Tab') && event.type === 'mousedown') textArea.setRangeText('\t', pos, pos, 'end');
   if (event.currentTarget.classList.contains('Delete') && event.type === 'mousedown') {
     if (pos >= 0 && textArea.selectionStart === textArea.selectionEnd) {
       textArea.value = textArea.value.slice(0, pos)
